@@ -1,0 +1,7 @@
+#!/bin/sh
+pip install nltk
+pip install python-telegram-bot
+pip install python-telegram-bot --upgrade
+pip install scikit-learn
+pip install requests
+pip install beautifulsoup4

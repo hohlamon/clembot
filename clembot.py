@@ -1,45 +1,50 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-get_ipython().system('pip install nltk')
-get_ipython().system('pip install python-telegram-bot')
-get_ipython().system('pip install python-telegram-bot --upgrade')
+"""
+# before, install this package
+pip install nltk
+pip install python-telegram-bot
+pip install python-telegram-bot --upgrade
+pip install scikit-learn
+pip install requests
+pip install beautifulsoup4
+"""
 
+#       import database (convert into JSON)
+from database import database
 
-#improt database (convert ito JSON)
-form database import database
-#import utils
+#       import utils
 import json
 import random
 import time
 import datetime
-#import main library "nltk"
+#       import other
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.linear_model import LogisticRegression
+import requests
+from bs4 import BeautifulSoup
+#       import telegram-bot
+from telegram import Update, ForceReply
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+#       import main library "nltk"
 import nltk
-nltk.download('wordnet')
-nltk.download('stopwords')
-nltk.download('punkt')
+import ssl
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 from nltk.stem.porter import *
-
-#import other
-import sklearn
-import requests 
-from bs4 import BeautifulSoup
-
-stemmer = PorterStemmer()
-
-
-# In[4]:
-
-
-len(database['intents'])
+#       download other ntlk packages
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
+nltk.download('wordnet')
+nltk.download('stopwords')
+nltk.download('punkt')
 
 
-# In[5]:
-
-
-from nltk import * #моветон так делать, лучше импортировать конкретные нужные функции, или вызывать функции как nltk.func()
 def filter_text(text):
     text = text.lower()
     text_sep =  list(text)
@@ -51,38 +56,7 @@ def filter_text(text):
         word = WordNetLemmatizer().lemmatize(word)
         text_sep5.append(word)
     text_sep5 = ' '.join(text_sep5)
-        
-   
     return text_sep5
-
-
-# In[6]:
-
-
-X = []
-y = []
-for intent, intent_data in database['intents'].items():
-     for quest in intent_data['questions']:
-            X.append(filter_text(quest))
-            y.append(intent)
-
-
-# In[7]:
-
-
-from sklearn.feature_extraction.text import CountVectorizer
-vectorizer = CountVectorizer()
-X = vectorizer.fit_transform(X)
-
-
-# In[8]:
-
-
-from sklearn.linear_model import LogisticRegression
-clf = LogisticRegression().fit(X, y)
-
-
-# In[9]:
 
 
 def get_intent_ML(text):
@@ -94,26 +68,13 @@ def get_intent_ML(text):
     return clf.predict(vectorizer.transform(textbase))[0]
 
 
-# In[10]:
-
-
-get_intent_ML('temperature now')
-
-
-# In[11]:
-
-
 def timenow():
-    #seconds = time.time()
-   
-    c =  [datetime.datetime.now().hour, datetime.datetime.now().minute]
-    c[0],c[1] = str(c[0]),str(c[1])
+    # seconds = time.time()
+    c = [datetime.datetime.now().hour, datetime.datetime.now().minute]
+    c[0], c[1] = str(c[0]), str(c[1])
     if len(c[1]) < 2:
-        c[1] = '0'+ c[1]
+        c[1] = '0' + c[1]
     return ':'.join(c)
-
-
-# In[12]:
 
 
 def weather_parser_now():
@@ -122,9 +83,6 @@ def weather_parser_now():
     b = str()
     b = 'temperature : ' + str(data['main']['temp']) + '°C' + ', ' + str(data['weather'][0]['description'])
     return b
-
-
-# In[13]:
 
 
 def weather_forecast():
@@ -136,9 +94,6 @@ def weather_forecast():
     return b
 
 
-# In[14]:
-
-
 def functions(intent):
     if intent == 'Time':
         return database['intents']['Time']['responses'][0] + str(timenow())
@@ -146,9 +101,6 @@ def functions(intent):
         return database['intents']['Temperature_now']['responses'][0] + str(weather_parser_now())
     elif intent == 'Weather':
         return database['intents']['Weather']['responses'][0] + str(weather_forecast())
-
-
-# In[15]:
 
 
 def get_answer_by_intent(intent):
@@ -162,10 +114,8 @@ def get_answer_by_intent(intent):
             return None
 
 
-# In[16]:
-
-
-def botok(question):    
+def botok(question):
+    """unused func"""
     answer = str()
     intent = str()
     if question != 'break' and intent != 'goodbye' :
@@ -178,26 +128,9 @@ def botok(question):
             return answer
 
 
-# In[ ]:
+# botok() почему функция без аргумента, когда она ждет question
 
-
-#импорт в телегу
-
-
-# In[ ]:
-
-
-#botok() #почему функция без аргумента, когда она ждет question
-
-
-# In[18]:
-
-
-#from telegram import Update, ForceReply
-#from telegram.ext import Updater
-#from telegram import Update, ForceReply
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
-
+# импорт в телегу
 
 
 # Define a few command handlers. These usually take the two arguments update and
@@ -221,7 +154,7 @@ def echo(update: Update, _: CallbackContext) -> None:
     update.message.reply_text(botok(update.message.text))
 
 
-def main() -> None:
+def telegram_bot_start():
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
     updater = Updater("1807569036:AAGdNkgNSvDu_JZ3TdvfLkK-Ts0mmkm4jZw")
@@ -245,8 +178,17 @@ def main() -> None:
     updater.idle()
 
 
-# In[ ]:
-
-
-main()
+stemmer = PorterStemmer()
+len(database['intents'])
+X = []
+y = []
+for intent, intent_data in database['intents'].items():
+     for quest in intent_data['questions']:
+            X.append(filter_text(quest))
+            y.append(intent)
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(X)
+clf = LogisticRegression().fit(X, y)
+get_intent_ML('temperature now')
+telegram_bot_start()
 
