@@ -1,0 +1,5 @@
+nltk
+python-telegram-bot
+scikit-learn
+requests
+beautifulsoup4

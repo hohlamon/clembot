@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 """
 # before, install this package
 pip install nltk
@@ -12,13 +9,14 @@ pip install beautifulsoup4
 """
 
 #       import database (convert into JSON)
-from database import database
+from data import database
 
 #       import utils
 import json
 import random
 import time
 import datetime
+from os import getenv
 #       import other
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -157,7 +155,13 @@ def echo(update: Update, _: CallbackContext) -> None:
 def telegram_bot_start():
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
-    updater = Updater("1807569036:AAGdNkgNSvDu_JZ3TdvfLkK-Ts0mmkm4jZw")
+    token = os.getenv("TELEGRAM_APO_TOKEN")
+    if token != 0:
+        updater = Updater(token)
+    else:
+        print("Enter TELEGRAM_API_TOKEN as env (docker -e TELEGRAM_API_TOKEN=123412414)")
+        token = input()
+       # updater = Updater("1807569036:AAGdNkgNSvDu_JZ3TdvfLkK-Ts0mmkm4jZw")
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
