@@ -11,3 +11,6 @@ using docker
 - take database from JSON file
 - expand database
 - start bot on server (AWS, Azure, SberCloud)
+
+## Install to raspberry pi 3
+to install scikit-learn see https://stackoverflow.com/questions/38865708/how-can-i-run-python-scikit-learn-on-raspberry-pi

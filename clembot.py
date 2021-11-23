@@ -125,9 +125,6 @@ def botok(question):
             answer = random.choice(database['failure_phrases'])
             return answer
 
-
-# botok() почему функция без аргумента, когда она ждет question
-
 # импорт в телегу
 
 
@@ -156,7 +153,6 @@ def telegram_bot_start():
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
     updater = Updater(os.getenv("TELEGRAM_API_TOKEN"))
-#    updater = Updater("")
     print("the token will be received from ENV TELEGRAM_API_TOKEN")
 
  # Get the dispatcher to register handlers
