@@ -1,7 +1,7 @@
 # Telegram bot for finding where to go
 ## Install
 using docker 
-`docker build -t clembot .
+`docker build -t clembot .   
 docker run -e TELEGRAM_API_TOKEN="your token" --name clembot clembot`
 
 ## tasks:
