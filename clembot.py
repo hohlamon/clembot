@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 """
 # before, install this package
 pip install nltk
@@ -12,13 +9,14 @@ pip install beautifulsoup4
 """
 
 #       import database (convert into JSON)
-from database import database
+from data import database
 
 #       import utils
 import json
 import random
 import time
 import datetime
+import os
 #       import other
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -127,9 +125,6 @@ def botok(question):
             answer = random.choice(database['failure_phrases'])
             return answer
 
-
-# botok() почему функция без аргумента, когда она ждет question
-
 # импорт в телегу
 
 
@@ -157,9 +152,10 @@ def echo(update: Update, _: CallbackContext) -> None:
 def telegram_bot_start():
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
-    updater = Updater("1807569036:AAGdNkgNSvDu_JZ3TdvfLkK-Ts0mmkm4jZw")
+    updater = Updater(os.getenv("TELEGRAM_API_TOKEN"))
+    print("the token will be received from ENV TELEGRAM_API_TOKEN")
 
-    # Get the dispatcher to register handlers
+ # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
 
     # on different commands - answer in Telegram
