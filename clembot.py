@@ -1,18 +1,5 @@
-"""
-# before, install this package
-pip install nltk
-pip install python-telegram-bot
-pip install python-telegram-bot --upgrade
-pip install scikit-learn
-pip install requests
-pip install beautifulsoup4
-"""
-
-#       import database (convert into JSON)
-from data import database
-
 #       import utils
-import json
+# import json
 import random
 import time
 import datetime
@@ -42,19 +29,16 @@ nltk.download('wordnet')
 nltk.download('stopwords')
 nltk.download('punkt')
 
+#       import database (convert into JSON)
+from data import database
+
+
 
 def filter_text(text):
-    text = text.lower()
-    text_sep =  list(text)
-    text_sep2 = text_sep.copy()
-    text_sep3 = [c for c in text_sep if c in 'abcdefghijklmnopqrstuvwxyz ']
-    text_sep4 = nltk.word_tokenize(''.join(text_sep3))
-    text_sep5 = []
-    for word in text_sep4:
-        word = WordNetLemmatizer().lemmatize(word)
-        text_sep5.append(word)
-    text_sep5 = ' '.join(text_sep5)
-    return text_sep5
+    text_lower = [c for c in text.lower() if c in 'abcdefghijklmnopqrstuvwxyz ']
+    tokens = nltk.word_tokenize(text_lower)
+    lemmed_text = [WordNetLemmatizer().lemmatize(word) for word in tokens]
+    return ' '.join(lemmed_text)
 
 
 def get_intent_ML(text):
@@ -67,37 +51,36 @@ def get_intent_ML(text):
 
 
 def timenow():
-    # seconds = time.time()
-    c = [datetime.datetime.now().hour, datetime.datetime.now().minute]
-    c[0], c[1] = str(c[0]), str(c[1])
-    if len(c[1]) < 2:
-        c[1] = '0' + c[1]
-    return ':'.join(c)
+    hours = datetime.datetime.now().hour
+    minutes = datetime.datetime.now().minute
+    zero = ''
+    if minutes < 10:
+        zero = '0'
+    return f"{hours}:{zero}{minutes}"
 
 
 def weather_parser_now():
-    res = requests.get('http://api.openweathermap.org/data/2.5/weather?q=Saint Petersburg&appid=60d1330e994b5e282111c87053634edf&units=metric')
-    data = res.json()
-    b = str()
-    b = 'temperature : ' + str(data['main']['temp']) + '°C' + ', ' + str(data['weather'][0]['description'])
-    return b
+    response = requests.get('http://api.openweathermap.org/data/2.5/weather?q=Saint Petersburg&appid=60d1330e994b5e282111c87053634edf&units=metric')
+    data = response.json()
+    output = 'temperature : ' + str(data['main']['temp']) + '°C' + ', ' + str(data['weather'][0]['description'])
+    return output
 
 
 def weather_forecast():
-    b = str()
+    output = str()
     res = requests.get('http://api.openweathermap.org/data/2.5/forecast?q=Saint Petersburg&appid=60d1330e994b5e282111c87053634edf&units=metric')
     data = res.json()  
     for i in data['list']:
-        b += str(time.ctime(i['dt'])) + ' temperature: ' + str(i['main']['temp']) + '°C' + ', ' + str(i['weather'][0]['description']) + '\n'
-    return b
+        output += str(time.ctime(i['dt'])) + ' temperature: ' + str(i['main']['temp']) + '°C' + ', ' + str(i['weather'][0]['description']) + '\n'
+    return output
 
 
 def functions(intent):
     if intent == 'Time':
         return database['intents']['Time']['responses'][0] + str(timenow())
-    elif intent == 'Temperature_now':
+    if intent == 'Temperature_now':
         return database['intents']['Temperature_now']['responses'][0] + str(weather_parser_now())
-    elif intent == 'Weather':
+    if intent == 'Weather':
         return database['intents']['Weather']['responses'][0] + str(weather_forecast())
 
 
