@@ -11,13 +11,14 @@ import requests
 from bs4 import BeautifulSoup
 #       import telegram-bot
 from telegram import Update, ForceReply
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import Updater, CommandHandler, MessageHandler, filters, CallbackContext, ApplicationBuilder, ContextTypes
 #       import main library "nltk"
 import nltk
 import ssl
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 from nltk.stem.porter import *
+from nltk.tokenize import word_tokenize as tokenize
 #       download other ntlk packages
 try:
     _create_unverified_https_context = ssl._create_unverified_context
@@ -35,8 +36,8 @@ from data import database
 
 
 def filter_text(text):
-    text_lower = [c for c in text.lower() if c in 'abcdefghijklmnopqrstuvwxyz ']
-    tokens = nltk.word_tokenize(text_lower)
+    text_lower = ''.join([c for c in text.lower() if c in 'abcdefghijklmnopqrstuvwxyz '])
+    tokens = tokenize(text_lower)
     lemmed_text = [WordNetLemmatizer().lemmatize(word) for word in tokens]
     return ' '.join(lemmed_text)
 
@@ -127,38 +128,34 @@ def help_command(update: Update, _: CallbackContext) -> None:
     update.message.reply_text('Help!')
 
 
-def echo(update: Update, _: CallbackContext) -> None:
-    """Echo the user message."""
-    update.message.reply_text(botok(update.message.text))
+async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=botok(update.message.text))
 
 
 def telegram_bot_start():
     """Start the bot."""
-    # Create the Updater and pass it your bot's token.
-    updater = Updater(os.getenv("TELEGRAM_API_TOKEN"))
+    # Create the application and pass it your bot's token.
+
+    application = ApplicationBuilder().token("TOKEN").build()
     print("the token will be received from ENV TELEGRAM_API_TOKEN")
 
- # Get the dispatcher to register handlers
-    dispatcher = updater.dispatcher
-
+ # Get the application to register handlers
+    
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("help", help_command))
     # on different commands - answer in Telegram
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CommandHandler("help", help_command))
+    
 
     # on non command i.e message - echo the message on Telegram
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
-
+    application.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), echo))
     # Start the Bot
-    updater.start_polling()
+
+    application.run_polling()
 
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since
-    # start_polling() is non-blocking and will stop the bot gracefully.
-    updater.idle()
+    Updater.idle()
 
-
-stemmer = PorterStemmer()
-len(database['intents'])
 X = []
 y = []
 for intent, intent_data in database['intents'].items():
@@ -168,6 +165,5 @@ for intent, intent_data in database['intents'].items():
 vectorizer = CountVectorizer()
 X = vectorizer.fit_transform(X)
 clf = LogisticRegression().fit(X, y)
-get_intent_ML('temperature now')
+print(get_answer_by_intent(get_intent_ML('temperature now')))
 telegram_bot_start()
-
