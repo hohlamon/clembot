@@ -1,4 +1,4 @@
-#       import utils
+#import utils
 # import json
 import random
 import time
@@ -8,7 +8,6 @@ import os
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
 import requests
-from bs4 import BeautifulSoup
 #       import telegram-bot
 from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, filters, CallbackContext, ApplicationBuilder, ContextTypes
@@ -35,14 +34,14 @@ from data import database
 
 
 
-def filter_text(text):
+def filter_text(text:str)->str:
     text_lower = ''.join([c for c in text.lower() if c in 'abcdefghijklmnopqrstuvwxyz '])
     tokens = tokenize(text_lower)
     lemmed_text = [WordNetLemmatizer().lemmatize(word) for word in tokens]
     return ' '.join(lemmed_text)
 
 
-def get_intent_ML(text):
+def get_intent_ML(text:str)->str:
     textbase = []
     textbase.append(filter_text(text))
     probas = clf.predict_proba(vectorizer.transform(textbase))[0]
@@ -51,7 +50,7 @@ def get_intent_ML(text):
     return clf.predict(vectorizer.transform(textbase))[0]
 
 
-def timenow():
+def timenow()->str:
     hours = datetime.datetime.now().hour
     minutes = datetime.datetime.now().minute
     zero = ''
@@ -60,14 +59,14 @@ def timenow():
     return f"{hours}:{zero}{minutes}"
 
 
-def weather_parser_now():
+def weather_parser_now()->str:
     response = requests.get('http://api.openweathermap.org/data/2.5/weather?q=Saint Petersburg&appid=60d1330e994b5e282111c87053634edf&units=metric')
     data = response.json()
     output = 'temperature : ' + str(data['main']['temp']) + '°C' + ', ' + str(data['weather'][0]['description'])
     return output
 
 
-def weather_forecast():
+def weather_forecast()->str:
     output = str()
     res = requests.get('http://api.openweathermap.org/data/2.5/forecast?q=Saint Petersburg&appid=60d1330e994b5e282111c87053634edf&units=metric')
     data = res.json()  
@@ -76,7 +75,7 @@ def weather_forecast():
     return output
 
 
-def functions(intent):
+def functions(intent:str)-> str:
     if intent == 'Time':
         return database['intents']['Time']['responses'][0] + str(timenow())
     if intent == 'Temperature_now':
@@ -85,7 +84,7 @@ def functions(intent):
         return database['intents']['Weather']['responses'][0] + str(weather_forecast())
 
 
-def get_answer_by_intent(intent):
+def get_answer_by_intent(intent:str)->str:
     if intent in database['intents']:
         if intent in ['Time', 'Weather','Temperature_now']:
             return functions(intent)
@@ -96,7 +95,7 @@ def get_answer_by_intent(intent):
             return None
 
 
-def botok(question):
+def return_answer(question:str)-> str:
     """unused func"""
     answer = str()
     intent = str()
@@ -129,7 +128,7 @@ def help_command(update: Update, _: CallbackContext) -> None:
 
 
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=botok(update.message.text))
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=return_answer(update.message.text))
 
 
 def telegram_bot_start():
